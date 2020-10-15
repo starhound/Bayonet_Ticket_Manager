@@ -69,7 +69,7 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(9, 315);
+            this.label3.Location = new System.Drawing.Point(9, 466);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(38, 13);
             this.label3.TabIndex = 2;
@@ -82,6 +82,7 @@
             this.activeTicketsListBox.Name = "activeTicketsListBox";
             this.activeTicketsListBox.Size = new System.Drawing.Size(276, 95);
             this.activeTicketsListBox.TabIndex = 4;
+            this.activeTicketsListBox.SelectedIndexChanged += new System.EventHandler(this.activeTicketsListBox_SelectedIndexChanged);
             // 
             // ticketDescriptionTextBox
             // 
@@ -90,15 +91,15 @@
             this.ticketDescriptionTextBox.Name = "ticketDescriptionTextBox";
             this.ticketDescriptionTextBox.ReadOnly = true;
             this.ticketDescriptionTextBox.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.ticketDescriptionTextBox.Size = new System.Drawing.Size(633, 155);
+            this.ticketDescriptionTextBox.Size = new System.Drawing.Size(633, 318);
             this.ticketDescriptionTextBox.TabIndex = 5;
             // 
             // notesTextBox
             // 
-            this.notesTextBox.Location = new System.Drawing.Point(119, 315);
+            this.notesTextBox.Location = new System.Drawing.Point(119, 466);
             this.notesTextBox.Multiline = true;
             this.notesTextBox.Name = "notesTextBox";
-            this.notesTextBox.Size = new System.Drawing.Size(633, 56);
+            this.notesTextBox.Size = new System.Drawing.Size(633, 70);
             this.notesTextBox.TabIndex = 6;
             // 
             // expandButton
@@ -124,7 +125,7 @@
             // completedCheckBox
             // 
             this.completedCheckBox.AutoSize = true;
-            this.completedCheckBox.Location = new System.Drawing.Point(119, 377);
+            this.completedCheckBox.Location = new System.Drawing.Point(119, 542);
             this.completedCheckBox.Name = "completedCheckBox";
             this.completedCheckBox.Size = new System.Drawing.Size(76, 17);
             this.completedCheckBox.TabIndex = 10;
@@ -134,7 +135,7 @@
             // inProgressCheckBox
             // 
             this.inProgressCheckBox.AutoSize = true;
-            this.inProgressCheckBox.Location = new System.Drawing.Point(201, 377);
+            this.inProgressCheckBox.Location = new System.Drawing.Point(201, 542);
             this.inProgressCheckBox.Name = "inProgressCheckBox";
             this.inProgressCheckBox.Size = new System.Drawing.Size(79, 17);
             this.inProgressCheckBox.TabIndex = 11;
@@ -144,7 +145,7 @@
             // pendingCheckBox
             // 
             this.pendingCheckBox.AutoSize = true;
-            this.pendingCheckBox.Location = new System.Drawing.Point(286, 377);
+            this.pendingCheckBox.Location = new System.Drawing.Point(286, 542);
             this.pendingCheckBox.Name = "pendingCheckBox";
             this.pendingCheckBox.Size = new System.Drawing.Size(65, 17);
             this.pendingCheckBox.TabIndex = 12;
@@ -153,7 +154,7 @@
             // 
             // updateButton
             // 
-            this.updateButton.Location = new System.Drawing.Point(12, 412);
+            this.updateButton.Location = new System.Drawing.Point(12, 577);
             this.updateButton.Name = "updateButton";
             this.updateButton.Size = new System.Drawing.Size(75, 23);
             this.updateButton.TabIndex = 13;
@@ -163,7 +164,7 @@
             // 
             // discardButton
             // 
-            this.discardButton.Location = new System.Drawing.Point(104, 412);
+            this.discardButton.Location = new System.Drawing.Point(104, 577);
             this.discardButton.Name = "discardButton";
             this.discardButton.Size = new System.Drawing.Size(75, 23);
             this.discardButton.TabIndex = 14;
@@ -173,7 +174,7 @@
             // 
             // exitButton
             // 
-            this.exitButton.Location = new System.Drawing.Point(677, 412);
+            this.exitButton.Location = new System.Drawing.Point(677, 577);
             this.exitButton.Name = "exitButton";
             this.exitButton.Size = new System.Drawing.Size(75, 23);
             this.exitButton.TabIndex = 15;
@@ -197,10 +198,11 @@
             this.inProgressTicketBox.Name = "inProgressTicketBox";
             this.inProgressTicketBox.Size = new System.Drawing.Size(276, 95);
             this.inProgressTicketBox.TabIndex = 17;
+            this.inProgressTicketBox.SelectedIndexChanged += new System.EventHandler(this.inProgressTicketBox_SelectedIndexChanged);
             // 
             // backlogButton
             // 
-            this.backlogButton.Location = new System.Drawing.Point(596, 413);
+            this.backlogButton.Location = new System.Drawing.Point(596, 578);
             this.backlogButton.Name = "backlogButton";
             this.backlogButton.Size = new System.Drawing.Size(75, 23);
             this.backlogButton.TabIndex = 18;
@@ -210,7 +212,7 @@
             // 
             // remoteButton
             // 
-            this.remoteButton.Location = new System.Drawing.Point(286, 412);
+            this.remoteButton.Location = new System.Drawing.Point(286, 577);
             this.remoteButton.Name = "remoteButton";
             this.remoteButton.Size = new System.Drawing.Size(109, 23);
             this.remoteButton.TabIndex = 19;
@@ -222,7 +224,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(776, 448);
+            this.ClientSize = new System.Drawing.Size(776, 625);
             this.Controls.Add(this.remoteButton);
             this.Controls.Add(this.backlogButton);
             this.Controls.Add(this.inProgressTicketBox);

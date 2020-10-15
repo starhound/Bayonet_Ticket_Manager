@@ -1,132 +1,265 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web.UI.WebControls;
+using System.Windows.Forms;
 
 namespace Bayonet_Ticket_Manager
 {
-    class Ticket
+    public class Ticket
     {
-        private string user_name;
-        private string user_email;
-        private string host;
-        private string ip_address;
-        private string image_url;
-        private string ticket_description;
-        private string status;
-        private string notes;
+        private const char Separator = ':';
+
+        public override string ToString()
+        {
+            string output = "";
+            output += "TimeStamp       : " + TimeStamp + "\n";
+            output += "User_Name      : " + UserName + "\n";
+            output += "User_Email       : " + UserEmail + "\n";
+            output += "Hostname        : " + UserHostname + "\n";
+            output += "IP_Address      : " + UserIP + "\n";
+            output += "Image_URL     : " + ImageURL + "\n";
+            output += "Status              : " + Status + "\n";
+            output += TicketDescription + "\n\n";
+            if(Notes != null)
+                output += "Notes       : \n" + Notes + "\n";
+            return output;
+        }
+
+        public static string DetermineTicketStatus(bool complete, bool progress, bool pending)
+        {
+            if (complete && !progress && !pending)
+                return "*Completed*";
+            if (!complete && progress && !pending)
+                return "*In Progress*";
+            if (!complete && !progress && pending)
+                return "*Pending Approval*";
+            return "Error";
+        }
 
         Ticket()
         {
 
         }
 
-        Ticket(string user, string email, string hostname, string ip, string image, string description)
+        public Ticket(string ticket_id, string user, string email, string hostname, string ip, string image, string description, string dt, string status, string notes)
         {
-            this.user_name = user;
-            this.user_email = email;
-            this.host = hostname;
-            this.ip_address = ip;
-            this.image_url = image;
-            this.ticket_description = description;
+            this.TicketID = ticket_id;
+            this.UserName = user;
+            this.UserEmail = email;
+            this.UserHostname = hostname;
+            this.UserIP = ip;
+            this.ImageURL = image;
+            this.TicketDescription = description;
+            this.TimeStamp = dt;
+            this.Status = status;
+            this.Notes = notes;
         }
 
-        public string UserName
+        public static ArrayList InProgressTickets()
         {
-            get 
-            { 
-                return this.user_name; 
+            ArrayList progress = new ArrayList();
+
+            JArray all_tickets = API.BayonetTickets();
+
+            foreach (JToken message in all_tickets)
+            {
+                string msg = message["msg"].ToString();        
+                if(!msg.Contains("*In Progress*"))
+                    continue;
+
+                string alias = message["alias"].ToString();
+                string dt = message["ts"].ToString().Split()[0];
+                string id = message["_id"].ToString();
+                string user_name = GetTicketUserName(msg);
+                string email = GetTicketUserEmail(msg);
+                string ip = GetTicketUserIP(msg);
+                string image = GetTicketUserImageURL(msg);
+                string issue = GetTicketIssues(msg);
+                string notes = GetTicketNotes(msg);
+                string status = GetTicketStatus(msg);
+                Ticket ticket = new Ticket(id, user_name, email, alias, ip, image, issue, dt, status, notes);
+                progress.Add(ticket);
             }
-            set 
-            { 
-                this.user_name = value; 
-            }
+            return progress;
         }
 
-        public string UserEmail
+        public static ArrayList ActiveTickets()
         {
-            get 
-            { 
-                return this.user_email; 
+            ArrayList active = new ArrayList();
+
+            JArray all_tickets = API.BayonetTickets();
+
+            foreach (JToken message in all_tickets)
+            {
+                string msg = message["msg"].ToString();
+
+                if (!msg.Contains("*Active*"))
+                    continue;
+
+                string alias = message["alias"].ToString();
+                string dt = message["ts"].ToString().Split()[0];
+                string id = message["_id"].ToString();
+                string user_name = GetTicketUserName(msg);
+                string email = GetTicketUserEmail(msg);
+                string ip = GetTicketUserIP(msg);
+                string image = GetTicketUserImageURL(msg);
+                string issue = GetTicketIssues(msg);
+                string notes = GetTicketNotes(msg);
+                string status = GetTicketStatus(msg);
+
+                Ticket ticket = new Ticket(id, user_name, email, alias, ip, image, issue, dt, status, notes);
+                active.Add(ticket);
             }
-            set 
-            { 
-                this.user_email = value; 
-            }
+            return active;
         }
 
-        public string UserHostname
+        public static ArrayList BacklogTickets()
         {
-            get 
-            { 
-                return this.host;  
-            }
-            set
+            ArrayList backlog = new ArrayList();
+            JArray all_tickets = API.BayonetTickets();
+
+            foreach (JToken message in all_tickets)
             {
-                this.host = value;
+                string msg = message["msg"].ToString();
+                if (!msg.Contains("*Prending Approval*"))
+                    continue;
+
+                string alias = message["alias"].ToString();
+                string dt = message["ts"].ToString().Split()[0];
+                string id = message["_id"].ToString();
+                string user_name = GetTicketUserName(msg);
+                string email = GetTicketUserEmail(msg);
+                string ip = GetTicketUserIP(msg);
+                string image = GetTicketUserImageURL(msg);
+                string issue = GetTicketIssues(msg);
+                string notes = GetTicketNotes(msg);
+                string status = GetTicketStatus(msg);
+
+                Ticket ticket = new Ticket(id, user_name, email, alias, ip, image, issue, dt, status, notes);
+                backlog.Add(ticket);
             }
+            return backlog;
         }
 
-        public string UserIP
+        public static string[] GetTicketLines(string message)
         {
-            get
-            {
-                return this.ip_address;
-            }
-            set
-            {
-                this.ip_address = value;
-            }
+            string[] message_contents = message.Split('\n');
+            return message_contents;
         }
 
-        public string ImageURL
+        public static string GetTicketUserName(string message)
         {
-            get
+            string[] message_contents = GetTicketLines(message);
+            foreach(string line in message_contents)
             {
-                return this.image_url;
+                if (line.Contains("User_Name"))
+                    return line.Split(Separator)[1];
             }
-            set
-            {
-                this.image_url = value;
-            }
+            return "No User Name Found";
         }
 
-        public string TicketDescription
+        public static string GetTicketUserEmail(string message)
         {
-            get
+            string[] message_contents = GetTicketLines(message);
+            foreach (string line in message_contents)
             {
-                return this.ticket_description;
+                if (line.Contains("User_Email"))
+                {
+                    return line.Split(Separator)[1];
+                }
             }
-            set
-            {
-                this.ticket_description = value;
-            }
+            return "No User Email Found";
         }
 
-        public string GetStatus
+        public static string GetTicketUserHostname(string message)
         {
-            get
+            string[] message_contents = GetTicketLines(message);
+            foreach (string line in message_contents)
             {
-                return this.status;
+                if (line.Contains("Host_Name"))
+                    return line.Split(Separator)[1];
             }
-            set
-            {
-                this.status = value;
-            }
+            return "No User HostName Found";
         }
 
-        public string GetNotes
+        public static string GetTicketUserIP(string message)
         {
-            get
+            string[] message_contents = GetTicketLines(message);
+            foreach (string line in message_contents)
             {
-                return this.notes;
+                if (line.Contains("IP_Address"))
+                    return line.Split(Separator)[1];
             }
-            set
-            {
-                this.notes = value;
-            }
+            return "No User IP Found";
         }
+
+        public static string GetTicketUserImageURL(string message)
+        {
+            string[] message_contents = GetTicketLines(message);
+            foreach (string line in message_contents)
+            {
+                if (line.Contains("Image_URL"))
+                    return line.Split(Separator)[1];
+            }
+            return "No Image URL Found";
+        }
+
+        public static string GetTicketIssues(string message)
+        {
+            string[] issues = message.Split(new string[] { "Issue:" }, StringSplitOptions.None);
+            string issue = issues[1];
+            int indexOfSteam = issue.IndexOf("Status");
+            if (indexOfSteam >= 0)
+                issue = issue.Remove(indexOfSteam);
+            return "Issue:\n" + issue;
+        }
+
+        public static string[] GetTicketIssuesLines(string message)
+        {
+            return message.Split(new string[] { "Issue" }, StringSplitOptions.None);
+        }
+
+        public static string GetTicketStatus(string message)
+        {
+            string[] issues = message.Split('\n');
+            foreach(string line in issues)
+            {
+                if(line.Contains("Status"))
+                {
+                    string ticket_status = line.Split(':')[1];
+                    return ticket_status;
+                }
+            }
+            return "Status Not Found";
+        }
+
+        public static string GetTicketNotes(string message)
+        {
+            string notes = "";
+            string[] issues = GetTicketIssuesLines(message);
+            string[] enteredNotes = issues[1].Split(new string[] { "Notes" }, StringSplitOptions.None);            
+            int count = enteredNotes.Count();
+            if (count > 1)
+                notes = enteredNotes[1];
+            else
+                notes = "";
+            return notes;
+        }
+ 
+        public string TicketID { get; set; }
+        public string UserName { get; set; }
+        public string UserEmail { get; set; }
+        public string UserHostname { get; set; }
+        public string UserIP { get; set; }
+        public string ImageURL { get; set; }
+        public string TicketDescription { get; set; }
+        public string Status { get; set; }
+        public string TimeStamp { get; set; }
+        public string Notes { get; set; }
     }
 }

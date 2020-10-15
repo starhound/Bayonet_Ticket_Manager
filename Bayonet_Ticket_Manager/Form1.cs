@@ -1,34 +1,36 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using RestSharp;
-using RestSharp.Authenticators;
-using RestSharp.Extensions;
+﻿using Newtonsoft.Json.Linq;
 using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Diagnostics;
-using System.Drawing;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using System.Web.UI.WebControls;
+using System.Threading;
 using System.Windows.Forms;
+using Timer = System.Threading.Timer;
 
 namespace Bayonet_Ticket_Manager
 {
     public partial class Form1 : Form
     {
-        string AUTH_TOKEN;
-        string USER_ID;
-        const string ROOM_ID = "";
-        const string API_URL = "";
-        const string BOT_NAME = "";
-        const string BOT_PASSWORD = "";
+        //ArrayList tickets = new ArrayList();
+        ArrayList progressTickets = new ArrayList();
+        ArrayList activeTickets = new ArrayList();
+        ArrayList backlogTickets = new ArrayList();
 
-        ArrayList tickets = new ArrayList();
+        private static Timer timer;
+
+        public bool isInProgressSelected()
+        {
+            if(inProgressTicketBox.SelectedIndex == -1)
+                return false;      
+            return true;
+        }
+
+        public bool isActiveSelected()
+        {
+            if (activeTicketsListBox.SelectedIndex == -1)
+                return false;
+            return true;
+        }
 
         public Form1()
         {
@@ -47,11 +49,14 @@ namespace Bayonet_Ticket_Manager
         {
             notesTextBox.Text = "";
             ticketDescriptionTextBox.Text = "";
-            notesTextBox.Text = "";
             completedCheckBox.Checked = false;
             inProgressCheckBox.Checked = false;
             pendingCheckBox.Checked = false;
             activeTicketsListBox.Items.Clear();
+            inProgressTicketBox.Items.Clear();
+            progressTickets = null;
+            activeTickets = null;
+            backlogTickets = null;
             populateTicketBox();
         }
 
@@ -65,79 +70,71 @@ namespace Bayonet_Ticket_Manager
         /// </summary>
         public void populateTicketBox()
         {
-            var client = new RestClient(API_URL);
+            activeTickets = Ticket.ActiveTickets();
+            progressTickets = Ticket.InProgressTickets();
 
-            client.Authenticator = new SimpleAuthenticator("user", BOT_NAME, "password", BOT_PASSWORD);
-            var request = new RestRequest("login", Method.POST);
-            var response = client.Execute(request);
-            dynamic content = JsonConvert.DeserializeObject(response.Content);
-            var data = content.data;
-
-            //grab auth token and bot id
-            string auth = data.authToken.ToString();
-            string userId = data.userId.ToString();
-
-            AUTH_TOKEN = auth;
-            USER_ID = userId;
-
-            var ticket_client = new RestClient(API_URL);
-
-            var group_request = new RestRequest("groups.history", Method.GET);
-            group_request.AddQueryParameter("roomId", ROOM_ID);
-
-            group_request.AddHeader("X-Auth-Token", AUTH_TOKEN);
-            group_request.AddHeader("X-User-Id", USER_ID);
-            group_request.AddHeader("Content-Type", "application/json");
-
-            var ticket_response = ticket_client.Execute(group_request);
-
-            dynamic ticket_data = JsonConvert.DeserializeObject(ticket_response.Content);
-
-            JArray messages = ticket_data.messages;
-
-            foreach (JToken message in messages)
-            {
-                string msg = message["msg"].ToString();
-                if (msg.Contains("Status: *Completed*"))
-                    continue;
-                tickets.Add(message);
-                string alias = message["alias"].ToString();
-                string dt = message["ts"].ToString();
-                activeTicketsListBox.Items.Add(alias + " " + dt);
-            }
+            foreach(Ticket ticket in activeTickets)
+               activeTicketsListBox.Items.Add(ticket.UserHostname + "." + ticket.TicketID);
+            foreach (Ticket ticket in progressTickets)
+                inProgressTicketBox.Items.Add(ticket.UserHostname + "." + ticket.TicketID);
         }
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            activeTicketsListBox.Items.Clear();
             populateTicketBox();
         }
 
         private void refreshButton_Click(object sender, EventArgs e)
         {
+            inProgressTicketBox.Items.Clear();
             activeTicketsListBox.Items.Clear();
             populateTicketBox();
         }
 
-        /// <summary>
-        /// Grabs the JToken ticket from the ArrayList of active tickets
-        /// </summary>
-        /// <returns></returns>
-        public JToken getTicket()
+        public Ticket getTicket()
         {
-            string selected = activeTicketsListBox.GetItemText(activeTicketsListBox.SelectedItem);
-            var firstSpaceIndex = selected.IndexOf(" ");
-            var host_name = selected.Substring(0, firstSpaceIndex);
-            var dt = selected.Substring(firstSpaceIndex + 1);
-            foreach (JToken ticket in tickets)
+            if((isInProgressSelected() && isActiveSelected()) || (!isInProgressSelected() && !isActiveSelected()))
             {
-                string user_name = ticket["alias"].ToString();
-                if (user_name == host_name)
+                MessageBox.Show("Somehow you've managed to select tickets from both or none of the ticket list boxes. Good job.");
+                return null;
+            }
+
+            if(isInProgressSelected())
+            {
+                string ticket_info = inProgressTicketBox.SelectedItem.ToString();
+                string[] ticket_split = ticket_info.Split('.');
+                string host_name = ticket_split[0];
+                string dt = ticket_split[1];
+                foreach (Ticket ticket in progressTickets)
                 {
-                    string ticket_time = ticket["ts"].ToString();
-                    if (ticket_time == dt)
+                    string user_name = ticket.UserHostname;
+                    if (user_name == host_name)
                     {
-                        return ticket;
+                        string ticket_time = ticket.TicketID;
+                        if (ticket_time == dt)
+                        {
+                            return ticket;
+                        }
+                    }
+                }
+            } 
+
+            if(isActiveSelected())
+            {
+                string ticket_info = activeTicketsListBox.SelectedItem.ToString();
+                string[] ticket_split = ticket_info.Split('.');
+                string host_name = ticket_split[0];
+                string dt = ticket_split[1];
+                foreach (Ticket ticket in activeTickets)
+                {
+                    string user_name = ticket.UserHostname;
+                    if (user_name == host_name)
+                    {
+                        string ticket_time = ticket.TicketID;
+                        if (ticket_time == dt)
+                        {
+                            return ticket;
+                        }
                     }
                 }
             }
@@ -148,39 +145,72 @@ namespace Bayonet_Ticket_Manager
         /// Grabs the ticket message from its JToken from the list box
         /// </summary>
         /// <returns>ticket message contents or error string</returns>
-        public string getTicketMessage()
+        public string getTicketMessage(int box)
         {
-            string selected = activeTicketsListBox.GetItemText(activeTicketsListBox.SelectedItem);
-            var firstSpaceIndex = selected.IndexOf(" ");
-            var host_name = selected.Substring(0, firstSpaceIndex);
-            var dt = selected.Substring(firstSpaceIndex + 1);
-            foreach (JToken ticket in tickets)
+            if(box == 1)
             {
-                string user_name = ticket["alias"].ToString();
-                if (user_name == host_name)
+                string ticket_info = activeTicketsListBox.SelectedItem.ToString();
+                string[] ticket_split = ticket_info.Split('.');
+                string host_name = ticket_split[0];
+                string id = ticket_split[1];
+                foreach (Ticket ticket in activeTickets)
                 {
-                    string ticket_time = ticket["ts"].ToString();
-                    if (ticket_time == dt)
+                    string user_name = ticket.UserHostname;
+                    if (user_name == host_name)
                     {
-                        string msg = ticket["msg"].ToString();
-                        return msg.Replace("\n", Environment.NewLine);
+                        string ticket_id = ticket.TicketID;
+                        if (ticket_id == id)
+                            return ticket.ToString().Replace("\n", Environment.NewLine);
                     }
                 }
+                return "Error";
+            } 
+
+            if(box == 2)
+            {
+                string ticket_info = inProgressTicketBox.SelectedItem.ToString();
+                string[] ticket_split = ticket_info.Split('.');
+                string host_name = ticket_split[0];
+                string id = ticket_split[1];
+                foreach (Ticket ticket in progressTickets)
+                {
+                    string user_name = ticket.UserHostname;
+                    if (user_name == host_name)
+                    {
+                        string ticket_time = ticket.TicketID;
+                        if (ticket_time == id)
+                            return ticket.ToString().Replace("\n", Environment.NewLine);
+                    }
+                }
+                return "Error";
             }
-            return "Error";
+            return "Ticket Not Found";
         }
 
         private void expandButton_Click(object sender, EventArgs e)
         {
             ticketDescriptionTextBox.Text = "";
+            string progress = "";
+            string active = "";
 
-            if(activeTicketsListBox.SelectedItem == null)
+            if(activeTicketsListBox.SelectedItem != null)
+                 active = activeTicketsListBox.SelectedItem.ToString();
+            if(inProgressTicketBox.SelectedItem != null)
+                 progress = inProgressTicketBox.SelectedItem.ToString();
+
+            if(active.Length == 0 && progress.Length == 0)
             {
                 MessageBox.Show("Please select a ticket to expand.");
                 return;
             }
 
-            string msg = getTicketMessage();
+            int box;
+            if (active.Length > 0)
+                box = 1;
+            else
+                box = 2;
+
+            string msg = getTicketMessage(box);
 
             if(msg.Equals("Error"))
             {
@@ -194,95 +224,13 @@ namespace Bayonet_Ticket_Manager
         /// <summary>
         /// Determines the status for the ticket, returns error in string form on bad selections
         /// </summary>
-        /// <returns></returns>
+        /// <returns>new ticket status</returns>
         public string determineCheckBox()
         {
             bool complete = completedCheckBox.Checked;
             bool progress = inProgressCheckBox.Checked;
             bool pending = pendingCheckBox.Checked;
-
-            if (complete && !progress && !pending)
-                return "Completed";
-            if (!complete && progress && !pending)
-                return "In Progress";
-            if (!complete && !progress && pending)
-                return "Pending";
-            return "Error";
-        }
-
-        /// <summary>
-        /// Sends a direct message containing the notes and status to a user
-        /// </summary>
-        /// <param name="notes">Notes to be added to the ticket</param>
-        /// <param name="status">Status for the ticket to be set to</param>
-        /// <param name="user_name">User to notify</param>
-        public void notifyUser(string notes, string status, string user_name)
-        {
-            var client = new RestClient(API_URL);
-
-            var request = new RestRequest("chat.postMessage", Method.POST);
-
-            request.AddHeader("X-Auth-Token", AUTH_TOKEN);
-            request.AddHeader("X-User-Id", USER_ID);
-            request.AddHeader("Content-Type", "application/json");
-
-            string msg = "Your ticket has been marked as *" + status + "* by IT Staff with the following notes:\n";
-            msg += "_" + notes + "_" + Environment.NewLine;
-            msg += "\nThis is an automated message, replies and direct messages to this account are not monitored.\n";
-
-            request.AddJsonBody((new { channel = "@" + user_name, text = msg, }));
-
-            client.Execute(request);
-        }
-
-        /// <summary>
-        /// Updates the ticket message 
-        /// </summary>
-        /// <param name="msg">Ticket message for updating</param>
-        /// <param name="room">Designated tickets channel</param>
-        /// <param name="id">ID of RC message to alter</param>
-        public void updateMessage(string msg, string room, string id)
-        {
-            var client = new RestClient(API_URL);
-
-            var request = new RestRequest("chat.update", Method.POST);
-
-            request.AddHeader("X-Auth-Token", AUTH_TOKEN);
-            request.AddHeader("X-User-Id", USER_ID);
-            request.AddHeader("Content-Type", "application/json");
-
-            request.AddJsonBody((new { roomId = room, msgId = id, text = msg }));
-
-            client.Execute(request);
-        }
-
-        /// <summary>
-        /// Finds and matches a user name from RC using a supplied email
-        /// </summary>
-        /// <param name="email">RC linked email address</param>
-        /// <returns></returns>
-        public string getUserName(string email)
-        {
-            var client = new RestClient(API_URL);
-
-            var request = new RestRequest("users.list", Method.GET);
-
-            request.AddHeader("X-Auth-Token", AUTH_TOKEN);
-            request.AddHeader("X-User-Id", USER_ID);
-            request.AddHeader("Content-Type", "application/json");
-
-            var response = client.Execute(request);
-            dynamic data = JsonConvert.DeserializeObject(response.Content);
-
-            var users = data.users;
-
-            foreach(var user in users)
-            {
-                string userEmail = user["emails"][0]["address"].ToString();
-                if (email.Equals(userEmail))
-                    return user["username"].ToString();
-            }
-            return "Error";
+            return Ticket.DetermineTicketStatus(complete, progress, pending);
         }
 
         private void updateButton_Click(object sender, EventArgs e)
@@ -302,68 +250,37 @@ namespace Bayonet_Ticket_Manager
             string status = determineCheckBox();
 
             //grab ticket object
-            JToken ticket = getTicket();
-
+            Ticket ticket = getTicket();
             //pull ticket from message
-            string msg = ticket["msg"].ToString();
+            string msg = ticket.TicketDescription;
 
             //grab message ID from ticket object
-            string msgId = ticket["_id"].ToString();
+            string msgId = ticket.TicketID;
 
             //grab room ID as well
-            string roomId = ticket["rid"].ToString();
+            string roomId = API.TICKET_ROOM();
 
-            //for checking if this ticket has had notes entered already
-            bool has_notes = false;
-            bool has_status = false;
+            string old_notes = ticket.Notes;
+            if (old_notes.Length > 0)
+                ticket.Notes += "\n" + Environment.UserName + " - " + notes;
+            else
+                ticket.Notes = Environment.UserName + " - " + notes;
 
-            //seperates the message into a string array by lines
-            string[] old_message = msg.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
+            ticket.Status = status;
+            API.updateMessage(ticket.ToString(), roomId, msgId);
 
-            //if old message has notes and status in it, update the old message
-            for(int i = 0; i < old_message.Length; i++)
+            if(ticket.UserEmail.Length > 0 && !ticket.UserEmail.Equals("No User Email Found"))
             {
-                //find status line, update status
-                if (old_message[i].Contains("Status:"))
-                {
-                    //specify new status
-                    old_message[i] = "Status: " + status;
-
-                    //flag as having status already
-                    has_status = true;
-                }
-
-                //find notes line, update notes
-                if (old_message[i].Contains("Notes:"))
-                {
-                    //chop off the notes section, grab only content
-                    var old_notes_content = old_message[i].Substring(old_message[i].LastIndexOf(':') + 1);
-
-                    //append new note content to old notes, reform note section
-                    string new_notes = "Notes:\n" + old_notes_content + "\n" + notes;
-
-                    //set new notes into old message array
-                    old_message[i] = new_notes;
-
-                    //flag as having notes present already
-                    has_notes = true;
-                }
-            }
-
-            //formulate new message with notes and status
-            string newMsg = msg + "\n" + "Status: *" + status + "*\nNotes: " + notes;
-
-            //overwrite new message with updated old message
-            if (has_notes || has_status)
+                API.notifyUser(notes, status, ticket.UserEmail);
+            } 
+            else
             {
-                newMsg = String.Join("\n", old_message);
+                MessageBox.Show("No user email found for auto-reply");
             }
-
-            updateMessage(newMsg, roomId, msgId);
-
+            
             //obvious black magic 
             //gets the user email from the ticket issue string
-            string strRegex = @"[A-Za-z0-9_\-\+]+@[A-Za-z0-9\-]+\.([A-Za-z]{2,3})(?:\.[a-z]{2})?";
+            /*string strRegex = @"[A-Za-z0-9_\-\+]+@[A-Za-z0-9\-]+\.([A-Za-z]{2,3})(?:\.[a-z]{2})?";
 
             Regex myRegex = new Regex(strRegex, RegexOptions.None);
             string strTargetString = msg;
@@ -372,7 +289,7 @@ namespace Bayonet_Ticket_Manager
             {
                 if (myMatch.Success)
                 {
-                    string user_name = getUserName(myMatch.Value);
+                    string user_name = API.getUserName(myMatch.Value);
                     if(user_name.Equals("Error"))
                     {
                         MessageBox.Show("User name not found for auto-reply.");
@@ -381,14 +298,12 @@ namespace Bayonet_Ticket_Manager
                     }
 
                     //send a PM to user with updates and notes
-                    notifyUser(notes, status, user_name);
+                    API.notifyUser(notes, status, user_name);
                 }
-            }
+            }*/
 
             //clean up ticket values and re-display active tickets
             discard();
-            activeTicketsListBox.Items.Clear();
-            populateTicketBox();
         }
 
         private void remoteButton_Click(object sender, EventArgs e)
@@ -399,28 +314,23 @@ namespace Bayonet_Ticket_Manager
                 MessageBox.Show("Please select a ticket before attempting to remote in.");
                 return;
             }
-
-            string[] ticket = ticket_text.Split(':');
-            string[] hostnameData = ticket[3].Split('\n');
-
-            string hostname = hostnameData[0] + "@ad";
-            string pwd = "/K echo BayonetDesk! | ";
-            string application = "\"AnyDesk-2dfb0b0a_msi.exe\" ";
-            string anyDesk = pwd + application + hostname + " --with-password --silent";
-
-            var proc1 = new ProcessStartInfo();
-            proc1.UseShellExecute = true;
-            proc1.WindowStyle = ProcessWindowStyle.Hidden;
-            proc1.WorkingDirectory = @"C:\Program Files (x86)\AnyDesk-2dfb0b0a_msi\";
-            proc1.FileName = @"C:\Windows\System32\cmd.exe";
-            proc1.Arguments = anyDesk;
-            Process.Start(proc1);
+            AnyDesk.RemoteConnect(ticket_text);
         }
 
         private void backlogButton_Click(object sender, EventArgs e)
         {
             Backlog backlog = new Backlog();
             backlog.Show();
+        }
+
+        private void inProgressTicketBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            activeTicketsListBox.ClearSelected();   
+        }
+
+        private void activeTicketsListBox_SelectedIndexChanged(object sender, EventArgs e)
+        { 
+            inProgressTicketBox.ClearSelected();
         }
     }
 }
