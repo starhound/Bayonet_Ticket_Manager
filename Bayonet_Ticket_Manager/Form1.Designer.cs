@@ -33,12 +33,10 @@
             this.label3 = new System.Windows.Forms.Label();
             this.activeTicketsListBox = new System.Windows.Forms.ListBox();
             this.ticketDescriptionTextBox = new System.Windows.Forms.TextBox();
-            this.notesTextBox = new System.Windows.Forms.TextBox();
             this.expandButton = new System.Windows.Forms.Button();
             this.refreshButton = new System.Windows.Forms.Button();
             this.completedCheckBox = new System.Windows.Forms.CheckBox();
             this.inProgressCheckBox = new System.Windows.Forms.CheckBox();
-            this.pendingCheckBox = new System.Windows.Forms.CheckBox();
             this.updateButton = new System.Windows.Forms.Button();
             this.discardButton = new System.Windows.Forms.Button();
             this.exitButton = new System.Windows.Forms.Button();
@@ -46,6 +44,9 @@
             this.inProgressTicketBox = new System.Windows.Forms.ListBox();
             this.backlogButton = new System.Windows.Forms.Button();
             this.remoteButton = new System.Windows.Forms.Button();
+            this.label5 = new System.Windows.Forms.Label();
+            this.responseLabel = new System.Windows.Forms.Label();
+            this.notesTextBox = new System.Windows.Forms.TextBox();
             this.SuspendLayout();
             // 
             // label1
@@ -94,14 +95,6 @@
             this.ticketDescriptionTextBox.Size = new System.Drawing.Size(633, 318);
             this.ticketDescriptionTextBox.TabIndex = 5;
             // 
-            // notesTextBox
-            // 
-            this.notesTextBox.Location = new System.Drawing.Point(119, 466);
-            this.notesTextBox.Multiline = true;
-            this.notesTextBox.Name = "notesTextBox";
-            this.notesTextBox.Size = new System.Drawing.Size(633, 70);
-            this.notesTextBox.TabIndex = 6;
-            // 
             // expandButton
             // 
             this.expandButton.Location = new System.Drawing.Point(119, 113);
@@ -141,16 +134,6 @@
             this.inProgressCheckBox.TabIndex = 11;
             this.inProgressCheckBox.Text = "In Progress";
             this.inProgressCheckBox.UseVisualStyleBackColor = true;
-            // 
-            // pendingCheckBox
-            // 
-            this.pendingCheckBox.AutoSize = true;
-            this.pendingCheckBox.Location = new System.Drawing.Point(286, 542);
-            this.pendingCheckBox.Name = "pendingCheckBox";
-            this.pendingCheckBox.Size = new System.Drawing.Size(65, 17);
-            this.pendingCheckBox.TabIndex = 12;
-            this.pendingCheckBox.Text = "Pending";
-            this.pendingCheckBox.UseVisualStyleBackColor = true;
             // 
             // updateButton
             // 
@@ -212,7 +195,7 @@
             // 
             // remoteButton
             // 
-            this.remoteButton.Location = new System.Drawing.Point(286, 577);
+            this.remoteButton.Location = new System.Drawing.Point(326, 577);
             this.remoteButton.Name = "remoteButton";
             this.remoteButton.Size = new System.Drawing.Size(109, 23);
             this.remoteButton.TabIndex = 19;
@@ -220,11 +203,40 @@
             this.remoteButton.UseVisualStyleBackColor = true;
             this.remoteButton.Click += new System.EventHandler(this.remoteButton_Click);
             // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(392, 543);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(78, 13);
+            this.label5.TabIndex = 20;
+            this.label5.Text = "Update Status:";
+            // 
+            // responseLabel
+            // 
+            this.responseLabel.AutoSize = true;
+            this.responseLabel.Location = new System.Drawing.Point(476, 543);
+            this.responseLabel.Name = "responseLabel";
+            this.responseLabel.Size = new System.Drawing.Size(0, 13);
+            this.responseLabel.TabIndex = 21;
+            // 
+            // notesTextBox
+            // 
+            this.notesTextBox.Location = new System.Drawing.Point(119, 467);
+            this.notesTextBox.Multiline = true;
+            this.notesTextBox.Name = "notesTextBox";
+            this.notesTextBox.Size = new System.Drawing.Size(633, 69);
+            this.notesTextBox.TabIndex = 22;
+            this.notesTextBox.TextChanged += new System.EventHandler(this.textBox1_TextChanged);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(776, 625);
+            this.Controls.Add(this.notesTextBox);
+            this.Controls.Add(this.responseLabel);
+            this.Controls.Add(this.label5);
             this.Controls.Add(this.remoteButton);
             this.Controls.Add(this.backlogButton);
             this.Controls.Add(this.inProgressTicketBox);
@@ -232,12 +244,10 @@
             this.Controls.Add(this.exitButton);
             this.Controls.Add(this.discardButton);
             this.Controls.Add(this.updateButton);
-            this.Controls.Add(this.pendingCheckBox);
             this.Controls.Add(this.inProgressCheckBox);
             this.Controls.Add(this.completedCheckBox);
             this.Controls.Add(this.refreshButton);
             this.Controls.Add(this.expandButton);
-            this.Controls.Add(this.notesTextBox);
             this.Controls.Add(this.ticketDescriptionTextBox);
             this.Controls.Add(this.activeTicketsListBox);
             this.Controls.Add(this.label3);
@@ -258,12 +268,10 @@
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.ListBox activeTicketsListBox;
         private System.Windows.Forms.TextBox ticketDescriptionTextBox;
-        private System.Windows.Forms.TextBox notesTextBox;
         private System.Windows.Forms.Button expandButton;
         private System.Windows.Forms.Button refreshButton;
         private System.Windows.Forms.CheckBox completedCheckBox;
         private System.Windows.Forms.CheckBox inProgressCheckBox;
-        private System.Windows.Forms.CheckBox pendingCheckBox;
         private System.Windows.Forms.Button updateButton;
         private System.Windows.Forms.Button discardButton;
         private System.Windows.Forms.Button exitButton;
@@ -271,6 +279,9 @@
         private System.Windows.Forms.ListBox inProgressTicketBox;
         private System.Windows.Forms.Button backlogButton;
         private System.Windows.Forms.Button remoteButton;
+        private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.Label responseLabel;
+        private System.Windows.Forms.TextBox notesTextBox;
     }
 }
 

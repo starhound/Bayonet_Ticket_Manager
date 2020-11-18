@@ -15,13 +15,10 @@ namespace Bayonet_Ticket_Manager
 
         }
 
-        public static void RemoteConnect(string ticket_text)
+        public static void RemoteConnect(string host)
         {
-            string[] ticket = ticket_text.Split(':');
-            string[] hostnameData = ticket[3].Split('\n');
-
-            string hostname = hostnameData[0] + "@ad";
-            string pwd = "/K echo BayonetDesk! | ";
+            string hostname = host + "@ad";
+            string pwd = "/C echo BayonetDesk! | ";
             string application = "\"AnyDesk-2dfb0b0a_msi.exe\" ";
             string anyDesk = pwd + application + hostname + " --with-password --silent";
 
@@ -31,6 +28,7 @@ namespace Bayonet_Ticket_Manager
             proc1.WorkingDirectory = @"C:\Program Files (x86)\AnyDesk-2dfb0b0a_msi\";
             proc1.FileName = @"C:\Windows\System32\cmd.exe";
             proc1.Arguments = anyDesk;
+
             Process.Start(proc1);
         }
     }

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Web.Configuration;
 using System.Windows.Forms;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -26,7 +25,6 @@ namespace Bayonet_Ticket_Manager
 
         public static JArray BayonetTickets()
         {
- 
             client.Authenticator = new SimpleAuthenticator("user", BOT_NAME, "password", BOT_PASSWORD);
             var request = new RestRequest("login", Method.POST);
             var response = client.Execute(request);
@@ -43,6 +41,7 @@ namespace Bayonet_Ticket_Manager
             var ticket_client = new RestClient(API_URL);
 
             var group_request = new RestRequest("groups.history", Method.GET);
+            group_request.AddQueryParameter("count", "100");
             group_request.AddQueryParameter("roomId", ROOM_ID);
 
             group_request.AddHeader("X-Auth-Token", AUTH_TOKEN);

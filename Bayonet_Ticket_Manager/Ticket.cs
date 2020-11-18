@@ -1,11 +1,8 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Web.UI.WebControls;
+using System.Linq.Expressions;
 using System.Windows.Forms;
 
 namespace Bayonet_Ticket_Manager
@@ -24,20 +21,24 @@ namespace Bayonet_Ticket_Manager
             output += "IP_Address      : " + UserIP + "\n";
             output += "Image_URL     : " + ImageURL + "\n";
             output += "Status              : " + Status + "\n";
-            output += TicketDescription + "\n\n";
-            if(Notes != null)
-                output += "Notes       : \n" + Notes + "\n";
+
+            string issue = TicketDescription;
+            int notesIndex = issue.IndexOf("Ticket_Notes");
+            if(notesIndex >= 0)
+                issue = issue.Remove(notesIndex);
+            
+            output += issue;
+            output += "\n\nTicket_Notes:" + Notes;
+
             return output;
         }
 
-        public static string DetermineTicketStatus(bool complete, bool progress, bool pending)
+        public static string DetermineTicketStatus(bool complete, bool progress)
         {
-            if (complete && !progress && !pending)
+            if (complete && !progress)
                 return "*Completed*";
-            if (!complete && progress && !pending)
+            if (!complete && progress)
                 return "*In Progress*";
-            if (!complete && !progress && pending)
-                return "*Pending Approval*";
             return "Error";
         }
 
@@ -238,17 +239,26 @@ namespace Bayonet_Ticket_Manager
             return "Status Not Found";
         }
 
+        public static string GetTicketNotesForView(string message)
+        {
+            string old_notes = message.Split(new string[] { "Ticket_Notes" }, StringSplitOptions.None)[1];
+            string true_old_notes = old_notes.Split(':')[1];
+            if (true_old_notes.Length > 0)
+                return true_old_notes;
+            
+            return null;
+        }
+
         public static string GetTicketNotes(string message)
         {
-            string notes = "";
-            string[] issues = GetTicketIssuesLines(message);
-            string[] enteredNotes = issues[1].Split(new string[] { "Notes" }, StringSplitOptions.None);            
-            int count = enteredNotes.Count();
-            if (count > 1)
-                notes = enteredNotes[1];
-            else
-                notes = "";
-            return notes;
+            if(message.Contains("Ticket_Notes"))
+            {
+                string old_notes = message.Split(new string[] { "Ticket_Notes" }, StringSplitOptions.None)[1];
+                string true_old_notes = old_notes.Split(':')[1];
+                if(true_old_notes.Length > 0)
+                    return true_old_notes;
+            }
+            return "";
         }
  
         public string TicketID { get; set; }

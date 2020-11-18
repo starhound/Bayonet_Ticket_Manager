@@ -1,11 +1,7 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections;
-using System.Linq;
-using System.Text.RegularExpressions;
-using System.Threading;
 using System.Windows.Forms;
-using Timer = System.Threading.Timer;
+using System.Windows.Controls;
 
 namespace Bayonet_Ticket_Manager
 {
@@ -15,8 +11,6 @@ namespace Bayonet_Ticket_Manager
         ArrayList progressTickets = new ArrayList();
         ArrayList activeTickets = new ArrayList();
         ArrayList backlogTickets = new ArrayList();
-
-        private static Timer timer;
 
         public bool isInProgressSelected()
         {
@@ -51,7 +45,7 @@ namespace Bayonet_Ticket_Manager
             ticketDescriptionTextBox.Text = "";
             completedCheckBox.Checked = false;
             inProgressCheckBox.Checked = false;
-            pendingCheckBox.Checked = false;
+            //pendingCheckBox.Checked = false;
             activeTicketsListBox.Items.Clear();
             inProgressTicketBox.Items.Clear();
             progressTickets = null;
@@ -94,11 +88,8 @@ namespace Bayonet_Ticket_Manager
         public Ticket getTicket()
         {
             if((isInProgressSelected() && isActiveSelected()) || (!isInProgressSelected() && !isActiveSelected()))
-            {
-                MessageBox.Show("Somehow you've managed to select tickets from both or none of the ticket list boxes. Good job.");
                 return null;
-            }
-
+            
             if(isInProgressSelected())
             {
                 string ticket_info = inProgressTicketBox.SelectedItem.ToString();
@@ -189,6 +180,7 @@ namespace Bayonet_Ticket_Manager
 
         private void expandButton_Click(object sender, EventArgs e)
         {
+            responseLabel.Text = "";
             ticketDescriptionTextBox.Text = "";
             string progress = "";
             string active = "";
@@ -229,8 +221,8 @@ namespace Bayonet_Ticket_Manager
         {
             bool complete = completedCheckBox.Checked;
             bool progress = inProgressCheckBox.Checked;
-            bool pending = pendingCheckBox.Checked;
-            return Ticket.DetermineTicketStatus(complete, progress, pending);
+            //bool pending = pendingCheckBox.Checked;
+            return Ticket.DetermineTicketStatus(complete, progress);
         }
 
         private void updateButton_Click(object sender, EventArgs e)
@@ -251,8 +243,6 @@ namespace Bayonet_Ticket_Manager
 
             //grab ticket object
             Ticket ticket = getTicket();
-            //pull ticket from message
-            string msg = ticket.TicketDescription;
 
             //grab message ID from ticket object
             string msgId = ticket.TicketID;
@@ -261,46 +251,25 @@ namespace Bayonet_Ticket_Manager
             string roomId = API.TICKET_ROOM();
 
             string old_notes = ticket.Notes;
-            if (old_notes.Length > 0)
+
+            if (old_notes != null)
                 ticket.Notes += "\n" + Environment.UserName + " - " + notes;
             else
                 ticket.Notes = Environment.UserName + " - " + notes;
 
             ticket.Status = status;
+
             API.updateMessage(ticket.ToString(), roomId, msgId);
 
             if(ticket.UserEmail.Length > 0 && !ticket.UserEmail.Equals("No User Email Found"))
             {
                 API.notifyUser(notes, status, ticket.UserEmail);
+                responseLabel.Text = "NOTIFICATION SENT";
             } 
             else
             {
-                MessageBox.Show("No user email found for auto-reply");
+                responseLabel.Text = "NO NOTIFICATION SENT";
             }
-            
-            //obvious black magic 
-            //gets the user email from the ticket issue string
-            /*string strRegex = @"[A-Za-z0-9_\-\+]+@[A-Za-z0-9\-]+\.([A-Za-z]{2,3})(?:\.[a-z]{2})?";
-
-            Regex myRegex = new Regex(strRegex, RegexOptions.None);
-            string strTargetString = msg;
-
-            foreach (Match myMatch in myRegex.Matches(strTargetString))
-            {
-                if (myMatch.Success)
-                {
-                    string user_name = API.getUserName(myMatch.Value);
-                    if(user_name.Equals("Error"))
-                    {
-                        MessageBox.Show("User name not found for auto-reply.");
-                        discard();
-                        return;
-                    }
-
-                    //send a PM to user with updates and notes
-                    API.notifyUser(notes, status, user_name);
-                }
-            }*/
 
             //clean up ticket values and re-display active tickets
             discard();
@@ -308,19 +277,21 @@ namespace Bayonet_Ticket_Manager
 
         private void remoteButton_Click(object sender, EventArgs e)
         {
-            string ticket_text = ticketDescriptionTextBox.Text;
-            if(ticket_text.Length == 0)
+            Ticket ticket = getTicket();
+            if(ticket == null)
             {
                 MessageBox.Show("Please select a ticket before attempting to remote in.");
                 return;
             }
-            AnyDesk.RemoteConnect(ticket_text);
+            string host = ticket.UserHostname;
+            AnyDesk.RemoteConnect(host);
         }
 
         private void backlogButton_Click(object sender, EventArgs e)
         {
-            Backlog backlog = new Backlog();
-            backlog.Show();
+            MessageBox.Show("Feature not yet completed.");
+            //Backlog backlog = new Backlog();
+            //backlog.Show();
         }
 
         private void inProgressTicketBox_SelectedIndexChanged(object sender, EventArgs e)
@@ -331,6 +302,11 @@ namespace Bayonet_Ticket_Manager
         private void activeTicketsListBox_SelectedIndexChanged(object sender, EventArgs e)
         { 
             inProgressTicketBox.ClearSelected();
+        }
+
+        private void textBox1_TextChanged(object sender, EventArgs e)
+        {
+
         }
     }
 }
