@@ -1,9 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
 using System.Collections;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Windows.Forms;
 
 namespace Bayonet_Ticket_Manager
 {
@@ -123,7 +120,6 @@ namespace Bayonet_Ticket_Manager
         {
             ArrayList backlog = new ArrayList();
             JArray all_tickets = API.BayonetTickets();
-
             foreach (JToken message in all_tickets)
             {
                 string msg = message["msg"].ToString();

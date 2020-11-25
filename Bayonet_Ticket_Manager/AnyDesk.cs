@@ -9,7 +9,6 @@ namespace Bayonet_Ticket_Manager
 {
     class AnyDesk
     {
-
         public AnyDesk()
         {
 
