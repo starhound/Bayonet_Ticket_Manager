@@ -17,7 +17,7 @@ namespace Bayonet_Ticket_Manager
         public static void RemoteConnect(string host)
         {
             string hostname = host + "@ad";
-            string pwd = "/C echo BayonetDesk! | ";
+            string pwd = "/C echo YOUR_ANYDESK_ADMIN_PWD | ";
             string application = "\"AnyDesk-2dfb0b0a_msi.exe\" ";
             string anyDesk = pwd + application + hostname + " --with-password --silent";
 
