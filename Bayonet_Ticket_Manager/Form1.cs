@@ -6,10 +6,9 @@ namespace Bayonet_Ticket_Manager
 {
     public partial class Form1 : Form
     {
-        //ArrayList tickets = new ArrayList();
         ArrayList progressTickets = new ArrayList();
         ArrayList activeTickets = new ArrayList();
-        ArrayList backlogTickets = new ArrayList();
+        //ArrayList backlogTickets = new ArrayList();
 
         public bool isInProgressSelected()
         {
@@ -49,7 +48,7 @@ namespace Bayonet_Ticket_Manager
             inProgressTicketBox.Items.Clear();
             progressTickets = null;
             activeTickets = null;
-            backlogTickets = null;
+            //backlogTickets = null;
             populateTicketBox();
         }
 
@@ -301,11 +300,6 @@ namespace Bayonet_Ticket_Manager
         private void activeTicketsListBox_SelectedIndexChanged(object sender, EventArgs e)
         {
             inProgressTicketBox.ClearSelected();
-        }
-
-        private void textBox1_TextChanged(object sender, EventArgs e)
-        {
-
         }
     }
 }
