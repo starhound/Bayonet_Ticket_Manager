@@ -1,9 +1,9 @@
-﻿using System;
-using System.Windows.Forms;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RestSharp;
 using RestSharp.Authenticators;
+using System;
+using System.Windows.Forms;
 
 namespace Bayonet_Ticket_Manager
 {
@@ -98,7 +98,7 @@ namespace Bayonet_Ticket_Manager
         {
             string trimmed = user_email.Trim(' ');
             string user_name = getUserName(trimmed);
-            if(user_name.Equals("Error"))
+            if (user_name.Equals("Error"))
             {
                 MessageBox.Show("No email found for auto reply");
                 return;

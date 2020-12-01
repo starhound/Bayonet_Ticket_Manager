@@ -63,7 +63,7 @@ namespace Bayonet_Ticket_Manager
 
             if (pendingListBox.SelectedItem != null)
                 active = pendingListBox.SelectedItem.ToString();
-           
+
             if (active.Length == 0)
             {
                 MessageBox.Show("Please select a ticket to expand.");
@@ -71,7 +71,7 @@ namespace Bayonet_Ticket_Manager
             }
 
             Ticket ticket = getTicket();
-;
+            ;
             if (ticket == null)
             {
                 MessageBox.Show("Error.");
@@ -101,21 +101,21 @@ namespace Bayonet_Ticket_Manager
 
         private void submitButton_Click(object sender, EventArgs e)
         {
-            if(descriptionTextBox.Text.Length < 0)
+            if (descriptionTextBox.Text.Length < 0)
             {
                 MessageBox.Show("Please expand a ticket first.");
                 return;
             }
 
             string status = determineCheckBox();
-            if(status.Equals("Error") || status.Equals("BOTH") || status.Equals("NONE"))
+            if (status.Equals("Error") || status.Equals("BOTH") || status.Equals("NONE"))
             {
                 MessageBox.Show("Please select Approved or Denied before submitting an update.");
                 return;
             }
 
             string reason = reasonTextBox.Text;
-            if(reason.Length < 0)
+            if (reason.Length < 0)
             {
                 MessageBox.Show("Please enter a reason for the approval or denying of selected ticket.");
                 return;
@@ -123,7 +123,7 @@ namespace Bayonet_Ticket_Manager
 
             Ticket ticket = getTicket();
 
-            if(deniedCheckBox.Checked == true)
+            if (deniedCheckBox.Checked == true)
             {
                 ticket.Status = "*Completed*";
                 string notes = "Your ticket has been denied by the Network Administrator for the following reason:\n" + reasonTextBox.Text;

@@ -1,9 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
 using System.Collections;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Windows.Forms;
 
 namespace Bayonet_Ticket_Manager
 {
@@ -24,9 +21,9 @@ namespace Bayonet_Ticket_Manager
 
             string issue = TicketDescription;
             int notesIndex = issue.IndexOf("Ticket_Notes");
-            if(notesIndex >= 0)
+            if (notesIndex >= 0)
                 issue = issue.Remove(notesIndex);
-            
+
             output += issue;
             output += "\n\nTicket_Notes:" + Notes;
 
@@ -69,8 +66,8 @@ namespace Bayonet_Ticket_Manager
 
             foreach (JToken message in all_tickets)
             {
-                string msg = message["msg"].ToString();        
-                if(!msg.Contains("*In Progress*"))
+                string msg = message["msg"].ToString();
+                if (!msg.Contains("*In Progress*"))
                     continue;
 
                 string alias = message["alias"].ToString();
@@ -156,7 +153,7 @@ namespace Bayonet_Ticket_Manager
         public static string GetTicketUserName(string message)
         {
             string[] message_contents = GetTicketLines(message);
-            foreach(string line in message_contents)
+            foreach (string line in message_contents)
             {
                 if (line.Contains("User_Name"))
                     return line.Split(Separator)[1];
@@ -228,9 +225,9 @@ namespace Bayonet_Ticket_Manager
         public static string GetTicketStatus(string message)
         {
             string[] issues = message.Split('\n');
-            foreach(string line in issues)
+            foreach (string line in issues)
             {
-                if(line.Contains("Status"))
+                if (line.Contains("Status"))
                 {
                     string ticket_status = line.Split(':')[1];
                     return ticket_status;
@@ -245,22 +242,22 @@ namespace Bayonet_Ticket_Manager
             string true_old_notes = old_notes.Split(':')[1];
             if (true_old_notes.Length > 0)
                 return true_old_notes;
-            
+
             return null;
         }
 
         public static string GetTicketNotes(string message)
         {
-            if(message.Contains("Ticket_Notes"))
+            if (message.Contains("Ticket_Notes"))
             {
                 string old_notes = message.Split(new string[] { "Ticket_Notes" }, StringSplitOptions.None)[1];
                 string true_old_notes = old_notes.Split(':')[1];
-                if(true_old_notes.Length > 0)
+                if (true_old_notes.Length > 0)
                     return true_old_notes;
             }
             return "";
         }
- 
+
         public string TicketID { get; set; }
         public string UserName { get; set; }
         public string UserEmail { get; set; }

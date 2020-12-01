@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Windows.Forms;
-using System.Windows.Controls;
 
 namespace Bayonet_Ticket_Manager
 {
@@ -14,8 +13,8 @@ namespace Bayonet_Ticket_Manager
 
         public bool isInProgressSelected()
         {
-            if(inProgressTicketBox.SelectedIndex == -1)
-                return false;      
+            if (inProgressTicketBox.SelectedIndex == -1)
+                return false;
             return true;
         }
 
@@ -67,8 +66,8 @@ namespace Bayonet_Ticket_Manager
             activeTickets = Ticket.ActiveTickets();
             progressTickets = Ticket.InProgressTickets();
 
-            foreach(Ticket ticket in activeTickets)
-               activeTicketsListBox.Items.Add(ticket.UserHostname + "." + ticket.TicketID);
+            foreach (Ticket ticket in activeTickets)
+                activeTicketsListBox.Items.Add(ticket.UserHostname + "." + ticket.TicketID);
             foreach (Ticket ticket in progressTickets)
                 inProgressTicketBox.Items.Add(ticket.UserHostname + "." + ticket.TicketID);
         }
@@ -87,10 +86,10 @@ namespace Bayonet_Ticket_Manager
 
         public Ticket getTicket()
         {
-            if((isInProgressSelected() && isActiveSelected()) || (!isInProgressSelected() && !isActiveSelected()))
+            if ((isInProgressSelected() && isActiveSelected()) || (!isInProgressSelected() && !isActiveSelected()))
                 return null;
-            
-            if(isInProgressSelected())
+
+            if (isInProgressSelected())
             {
                 string ticket_info = inProgressTicketBox.SelectedItem.ToString();
                 string[] ticket_split = ticket_info.Split('.');
@@ -108,9 +107,9 @@ namespace Bayonet_Ticket_Manager
                         }
                     }
                 }
-            } 
+            }
 
-            if(isActiveSelected())
+            if (isActiveSelected())
             {
                 string ticket_info = activeTicketsListBox.SelectedItem.ToString();
                 string[] ticket_split = ticket_info.Split('.');
@@ -138,7 +137,7 @@ namespace Bayonet_Ticket_Manager
         /// <returns>ticket message contents or error string</returns>
         public string getTicketMessage(int box)
         {
-            if(box == 1)
+            if (box == 1)
             {
                 string ticket_info = activeTicketsListBox.SelectedItem.ToString();
                 string[] ticket_split = ticket_info.Split('.');
@@ -155,9 +154,9 @@ namespace Bayonet_Ticket_Manager
                     }
                 }
                 return "Error";
-            } 
+            }
 
-            if(box == 2)
+            if (box == 2)
             {
                 string ticket_info = inProgressTicketBox.SelectedItem.ToString();
                 string[] ticket_split = ticket_info.Split('.');
@@ -185,12 +184,12 @@ namespace Bayonet_Ticket_Manager
             string progress = "";
             string active = "";
 
-            if(activeTicketsListBox.SelectedItem != null)
-                 active = activeTicketsListBox.SelectedItem.ToString();
-            if(inProgressTicketBox.SelectedItem != null)
-                 progress = inProgressTicketBox.SelectedItem.ToString();
+            if (activeTicketsListBox.SelectedItem != null)
+                active = activeTicketsListBox.SelectedItem.ToString();
+            if (inProgressTicketBox.SelectedItem != null)
+                progress = inProgressTicketBox.SelectedItem.ToString();
 
-            if(active.Length == 0 && progress.Length == 0)
+            if (active.Length == 0 && progress.Length == 0)
             {
                 MessageBox.Show("Please select a ticket to expand.");
                 return;
@@ -204,7 +203,7 @@ namespace Bayonet_Ticket_Manager
 
             string msg = getTicketMessage(box);
 
-            if(msg.Equals("Error"))
+            if (msg.Equals("Error"))
             {
                 MessageBox.Show("Error.");
                 return;
@@ -229,7 +228,7 @@ namespace Bayonet_Ticket_Manager
         {
             //ensure single status box is checked
             string checkBox = determineCheckBox();
-            if(checkBox.Equals("Error"))
+            if (checkBox.Equals("Error"))
             {
                 MessageBox.Show("Please select a ticket status box.");
                 return;
@@ -261,11 +260,11 @@ namespace Bayonet_Ticket_Manager
 
             API.updateMessage(ticket.ToString(), roomId, msgId);
 
-            if(ticket.UserEmail.Length > 0 && !ticket.UserEmail.Equals("No User Email Found"))
+            if (ticket.UserEmail.Length > 0 && !ticket.UserEmail.Equals("No User Email Found"))
             {
                 API.notifyUser(notes, status, ticket.UserEmail);
                 responseLabel.Text = "NOTIFICATION SENT";
-            } 
+            }
             else
             {
                 responseLabel.Text = "NO NOTIFICATION SENT";
@@ -278,7 +277,7 @@ namespace Bayonet_Ticket_Manager
         private void remoteButton_Click(object sender, EventArgs e)
         {
             Ticket ticket = getTicket();
-            if(ticket == null)
+            if (ticket == null)
             {
                 MessageBox.Show("Please select a ticket before attempting to remote in.");
                 return;
@@ -296,11 +295,11 @@ namespace Bayonet_Ticket_Manager
 
         private void inProgressTicketBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            activeTicketsListBox.ClearSelected();   
+            activeTicketsListBox.ClearSelected();
         }
 
         private void activeTicketsListBox_SelectedIndexChanged(object sender, EventArgs e)
-        { 
+        {
             inProgressTicketBox.ClearSelected();
         }
 
