@@ -7,6 +7,6 @@ This application lets IT staff view and track tickets submitted by users of the 
 similairly to [Rocket.Chat](https://rocket.chat) as the client does.
 
 Currently there are only two states which tickets can be marked as: "In Progress" and "Completed" but there are plans to enable a higher tier of 
-workflow management with a "Backlog" or "Pending" option. 
+workflow management with a "Backlog" or "Pending" option which is intended for elevation to higher levels of management for approval.
 
 Currently the Ticket Manager does not integrate with tickets generated from [Bayonet Tickets - Android](https://github.com/starhound/BayonetTickets_Android).
